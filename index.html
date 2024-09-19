@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Judge Flavi</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background-image: url('/judge.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: #2c3e50;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            background-color: rgba(255, 255, 255, 0.85);
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+            margin-top: 50px;
+        }
+
+        .section {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(255, 243, 205, 0.9); /* Semi-transparent */
+            border: 2px solid #decba4;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 1em;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.8em;
+            color: #bdc3c7;
+        }
+
+        .result {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-top: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- "Enter Time to Adjust the Verdict" Section -->
+        <div class="section">
+            <label>Enter Time to Adjust the Verdict:</label><br>
+            <input type="number" id="years" placeholder="Years" required> years
+            <input type="number" id="months" placeholder="Months" required> months
+            <input type="number" id="days" placeholder="Days" required> days<br><br>
+        </div>
+
+        <!-- Fraction Increase/Decrease Section -->
+        <div class="section">
+            <label>Enter Fraction for Increase/Decrease:</label><br>
+            <input type="text" id="fraction" placeholder="e.g. 1/3"><br><br>
+
+            <button type="button" onclick="increaseByFraction()">Increase by Fraction</button>
+            <button type="button" onclick="decreaseByFraction()">Decrease by Fraction</button>
+        </div>
+
+        <!-- Add/Subtract Section -->
+        <div class="section">
+            <label>Add/Subtract Time:</label><br>
+            <input type="number" id="addSubtractYears" placeholder="Years"> years
+            <input type="number" id="addSubtractMonths" placeholder="Months"> months
+            <input type="number" id="addSubtractDays" placeholder="Days"> days<br><br>
+
+            <button type="button" onclick="performOperation('add')">Add</button>
+            <button type="button" onclick="performOperation('subtract')">Subtract</button>
+        </div>
+
+        <!-- Multiply/Divide Section -->
+        <div class="section">
+            <label>Enter Factor for Multiply/Divide:</label><br>
+            <input type="text" id="factor" placeholder="Factor or Divisor"><br><br>
+
+            <button type="button" onclick="performOperation('multiply')">Multiply</button>
+            <button type="button" onclick="performOperation('divide')">Divide</button>
+        </div>
+
+        <!-- Result Section -->
+        <div class="section">
+            <div class="result" id="result">Current Duration: 0 years, 0 months, 0 days</div>
+            <button type="button" onclick="replaceInitialValues()">Replace Initial Values with Result</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        © 2024 Judge Flavi's Court - Where Judgments are Swift and Smiles are Swift-er!
+    </div>
+
+    <script>
+        let currentDuration = { years: 0, months: 0, days: 0 };
+
+        function performOperation(operation) {
+            const years = parseInt(document.getElementById('years').value) || 0;
+            const months = parseInt(document.getElementById('months').value) || 0;
+            const days = parseInt(document.getElementById('days').value) || 0;
+
+            const addSubtractYears = parseInt(document.getElementById('addSubtractYears').value) || 0;
+            const addSubtractMonths = parseInt(document.getElementById('addSubtractMonths').value) || 0;
+            const addSubtractDays = parseInt(document.getElementById('addSubtractDays').value) || 0;
+
+            const factor = parseFloat(document.getElementById('factor')?.value) || 1;
+
+            if (operation === 'add') {
+                currentDuration = addDuration(years, months, days, addSubtractYears, addSubtractMonths, addSubtractDays);
+            } else if (operation === 'subtract') {
+                currentDuration = subtractDuration(years, months, days, addSubtractYears, addSubtractMonths, addSubtractDays);
+            } else if (operation === 'multiply') {
+                currentDuration = multiplyDuration(years, months, days, factor);
+            } else if (operation === 'divide') {
+                currentDuration = divideDuration(years, months, days, factor);
+            }
+
+            displayResult();
+        }
+
+        function increaseByFraction() {
+            const fraction = parseFraction(document.getElementById('fraction').value);
+            const years = parseInt(document.getElementById('years').value) || 0;
+            const months = parseInt(document.getElementById('months').value) || 0;
+            const days = parseInt(document.getElementById('days').value) || 0;
+
+            let startDate = new Date();
+            startDate.setFullYear(startDate.getFullYear() + years);
+            startDate.setMonth(startDate.getMonth() + months);
+            startDate.setDate(startDate.getDate() + days);
+
+            let totalDays = (startDate - new Date()) / (1000 * 60 * 60 * 24);
+            let increasedDays = totalDays + totalDays * fraction;
+
+            currentDuration = getDateComponents(new Date(new Date().getTime() + increasedDays * (1000 * 60 * 60 * 24)));
+            displayResult();
+        }
+
+        function decreaseByFraction() {
+            const fraction = parseFraction(document.getElementById('fraction').value);
+            const years = parseInt(document.getElementById('years').value) || 0;
+            const months = parseInt(document.getElementById('months').value) || 0;
+            const days = parseInt(document.getElementById('days').value) || 0;
+
+            let startDate = new Date();
+            startDate.setFullYear(startDate.getFullYear() + years);
+            startDate.setMonth(startDate.getMonth() + months);
+            startDate.setDate(startDate.getDate() + days);
+
+            let totalDays = (startDate - new Date()) / (1000 * 60 * 60 * 24);
+            let decreasedDays = totalDays - totalDays * fraction;
+
+            currentDuration = getDateComponents(new Date(new Date().getTime() + decreasedDays * (1000 * 60 * 60 * 24)));
+            displayResult();
+        }
+
+        function displayResult() {
+            document.getElementById('result').innerText = `Current Duration: ${currentDuration.years} years, ${currentDuration.months} months, ${currentDuration.days} days`;
+        }
+
+        function replaceInitialValues() {
+            document.getElementById('years').value = currentDuration.years;
+            document.getElementById('months').value = currentDuration.months;
+            document.getElementById('days').value = currentDuration.days;
+        }
+
+        function addDuration(y, m, d, otherY, otherM, otherD) {
+            let startDate = new Date();
+            startDate.setFullYear(startDate.getFullYear() + y);
+            startDate.setMonth(startDate.getMonth() + m);
+            startDate.setDate(startDate.getDate() + d);
+
+            let endDate = new Date(startDate);
+            endDate.setFullYear(endDate.getFullYear() + otherY);
+            endDate.setMonth(endDate.getMonth() + otherM);
+            endDate.setDate(endDate.getDate() + otherD);
+
+            return getDateComponents(endDate);
+        }
+
+        function subtractDuration(y, m, d, otherY, otherM, otherD) {
+            let startDate = new Date();
+            startDate.setFullYear(startDate.getFullYear() + y);
+            startDate.setMonth(startDate.getMonth() + m);
+            startDate.setDate(startDate.getDate() + d);
+
+            let endDate = new Date(startDate);
+            endDate.setFullYear(endDate.getFullYear() - otherY);
+            endDate.setMonth(endDate.getMonth() - otherM);
+            endDate.setDate(endDate.getDate() - otherD);
+
+            return getDateComponents(endDate);
+        }
+
+        function multiplyDuration(y, m, d, factor) {
+            let startDate = new Date();
+            startDate.setFullYear(startDate.getFullYear() + y);
+            startDate.setMonth(startDate.getMonth() + m);
+            startDate.setDate(startDate.getDate() + d);
+
+            let totalDays = (startDate - new Date()) / (1000 * 60 * 60 * 24);
+            totalDays *= factor;
+
+            return getDateComponents(new Date(new Date().getTime() + totalDays * (1000 * 60 * 60 * 24)));
+        }
+
+        function divideDuration(y, m, d, divisor) {
+            let startDate = new Date();
+            startDate.setFullYear(startDate.getFullYear() + y);
+            startDate.setMonth(startDate.getMonth() + m);
+            startDate.setDate(startDate.getDate() + d);
+
+            let totalDays = (startDate - new Date()) / (1000 * 60 * 60 * 24);
+            totalDays /= divisor;
+
+            return getDateComponents(new Date(new Date().getTime() + totalDays * (1000 * 60 * 60 * 24)));
+        }
+
+        function parseFraction(fractionStr) {
+            const parts = fractionStr.split('/');
+            if (parts.length === 2) {
+                return parseFloat(parts[0]) / parseFloat(parts[1]);
+            } else {
+                alert("Invalid fraction format. Please enter a valid fraction like 1/3.");
+                return 0;
+            }
+        }
+
+        function getDateComponents(date) {
+            let years = date.getFullYear() - new Date().getFullYear();
+            let months = date.getMonth() - new Date().getMonth();
+            let days = date.getDate() - new Date().getDate();
+
+            if (days < 0) {
+                months--;
+                days += getDaysInMonth(date.getFullYear(), date.getMonth() - 1);
+            }
+
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            return { years, months, days };
+        }
+
+        function getDaysInMonth(year, month) {
+            return new Date(year, month + 1, 0).getDate();
+        }
+    </script>
+</body>
+</html>
